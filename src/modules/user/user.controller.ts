@@ -26,7 +26,7 @@ import { UserResponseDto } from './dtos/user-response.dto';
 import { EmailAlreadyTakenException } from './exceptions/email-already-taken.exception';
 import { UserService } from './user.service';
 // hi bhanuka, how are you doing? I hope you are doing well. I am here to help you with your code. If you have any questions or need further assistance, please let me know.
-
+// I am going to sliit you the code into smaller parts and explain each part in detail. This way, you can understand the code better and learn how to write similar code in the future. Let's start with the imports and the class declaration
 @Controller('users')
 @ApiTags('Users')
 export class UserController {
