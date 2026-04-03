@@ -25,6 +25,7 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { EmailAlreadyTakenException } from './exceptions/email-already-taken.exception';
 import { UserService } from './user.service';
+// hi bhanuka, how are you doing? I hope you are doing well. I am here to help you with your code. If you have any questions or need further assistance, please let me know.
 
 @Controller('users')
 @ApiTags('Users')
