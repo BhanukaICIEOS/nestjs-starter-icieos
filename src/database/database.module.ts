@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import configuration from 'src/config/configuration';
 
 @Module({
   imports: [
@@ -8,9 +9,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        uri:
-          configService.get<string>('MONGODB_URI') ??
-          'mongodb://127.0.0.1:27017/enerjobs',
+        uri: configuration().database.url
       }),
     }),
   ],
