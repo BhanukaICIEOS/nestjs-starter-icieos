@@ -4,7 +4,7 @@ import { ErrorCodes } from '../../errors/error-codes';
 
 export class NotFoundException extends BaseException {
   constructor(resource: string | number) {
-    super(`${resource} not found`, HttpStatus.NOT_FOUND, {
+    super(`${resource}`, HttpStatus.NOT_FOUND, {
       errorCode: ErrorCodes.NotFoundError,
     });
   }

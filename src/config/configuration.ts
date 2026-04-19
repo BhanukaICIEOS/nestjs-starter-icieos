@@ -8,8 +8,16 @@ export interface AppConfig {
   secret: string;
   database: DatabaseConfig;
   logger: LoggerConfig;
+  mail: MailConfig;
   isDevEnv: boolean;
   corsMaxAge: number;
+}
+
+export interface MailConfig {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
 }
 
 export interface DatabaseConfig {
@@ -40,6 +48,10 @@ export default (): AppConfig => {
     }),
     LOGGER_FORMAT: str({ choices: ['json', 'pretty'], default: 'json' }),
     CORS_MAX_AGE: num({ default: 86400 }),
+    MAIL_HOST: str({ default: 'smtp.gmail.com' }),
+    MAIL_PORT: num({ default: 587 }),
+    MAIL_USER: str(),
+    MAIL_PASS: str(),
   });
 
   const config: AppConfig = {
@@ -54,6 +66,12 @@ export default (): AppConfig => {
     logger: {
       level: env.LOGGER_LEVEL,
       format: env.LOGGER_FORMAT as LoggerFormat,
+    },
+    mail: {
+      host: env.MAIL_HOST,
+      port: env.MAIL_PORT,
+      user: env.MAIL_USER,
+      pass: env.MAIL_PASS,
     },
   };
 

@@ -3,8 +3,8 @@ import { HttpStatus } from '@nestjs/common';
 import { ErrorCodes } from '../../errors/error-codes';
 
 export class InvalidCredentialsException extends BaseException {
-  constructor() {
-    super('Wrong Credentials', HttpStatus.UNAUTHORIZED, {
+  constructor(resource: string | number) {
+    super(`${resource}`, HttpStatus.UNAUTHORIZED, {
       errorCode: ErrorCodes.InvalidLoginOrPasswordError,
     });
   }

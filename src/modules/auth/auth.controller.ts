@@ -1,12 +1,14 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Put, Req } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { SignupDto, SigninDto, AuthResponseDto, RefreshTokenDto } from './dtos';
+import { SignupDto, SigninDto, AuthResponseDto, RefreshTokenDto, ResetPasswordDto } from './dtos';
 import { MessageDto } from '../../common/dtos/message.dto';
 import { ApiUnauthorizedException } from '../../common/decorators/api-unauthorized-exception.decorator';
 import { ApiResourceConflictException } from '../../common/decorators/api-resource-conflict-exception.decorator';
 import { ApiValidationException } from '../../common/decorators/api-validation-exception.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { ChangePasswordDto } from './dtos/change-password.dto';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -56,5 +58,38 @@ export class AuthController {
   @ApiValidationException()
   async refreshTokens(@Body() refreshTokenDto: RefreshTokenDto): Promise<AuthResponseDto> {
     return this.authService.refreshTokens(refreshTokenDto.refreshToken);
+  }
+
+  @Put('change-password')
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() req) {
+     return this.authService.changePassword(changePasswordDto, req.userId);
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset email' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password reset email sent successfully',
+    type: MessageDto,
+  })
+  @ApiValidationException()
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto.email);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset password using token from email' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Password successfully reset',
+    type: MessageDto,
+  })
+  @ApiValidationException()
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.newPassword);
   }
 }
