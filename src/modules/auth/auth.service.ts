@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { SignupDto } from './dtos/signup.dto';
 import { SigninDto } from './dtos/signin.dto';
@@ -11,10 +11,16 @@ import { EmailAlreadyTakenException, InvalidRefreshTokenException } from 'src/co
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { nanoid } from 'nanoid';
 import { MailService } from 'src/services/mail.service';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly authRepository: AuthRepository, private readonly jwtService: JwtService, private readonly mailService: MailService) {}
+  constructor(
+    private readonly authRepository: AuthRepository,
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
+    private readonly rolesService: RolesService,
+  ) { }
 
   async signup(signupDto: SignupDto): Promise<AuthResponseDto> {
     // Check if user already exists
@@ -75,8 +81,8 @@ export class AuthService {
   }
 
   private generateToken(userId: string): string {
-    
-    const accessToken = this.jwtService.sign({ userId }, {expiresIn: '1h' });
+
+    const accessToken = this.jwtService.sign({ userId }, { expiresIn: '1h' });
     return accessToken;
   }
 
@@ -91,7 +97,7 @@ export class AuthService {
   async refreshTokens(refreshToken: string) {
     // Find the refresh token in the database
     const storedToken = await this.authRepository.findRefreshToken(refreshToken);
-    
+
     if (!storedToken) {
       throw new InvalidRefreshTokenException();
     }
@@ -168,7 +174,7 @@ export class AuthService {
   async resetPassword(token: string, newPassword: string) {
     // Find the reset token in the database
     const resetToken = await this.authRepository.findResetToken(token);
-    
+
     if (!resetToken) {
       throw new NotFoundException('Invalid or expired reset token');
     }
@@ -198,4 +204,19 @@ export class AuthService {
 
     return { message: 'Password successfully reset' };
   }
+
+  async getUserPermissions(userId: string) {
+    const user = await this.authRepository.findById(userId);
+
+    if (!user) throw new NotFoundException(`User id: ${userId} not found`);
+
+    if (!user.roleId) throw new NotFoundException(`User ${userId} has no role assigned`);
+
+    const role = await this.rolesService.getRoleById(user.roleId.toString());
+    
+    if (!role) throw new NotFoundException(`Role not found`);
+
+    return role.permissions;
+  }
+
 }
