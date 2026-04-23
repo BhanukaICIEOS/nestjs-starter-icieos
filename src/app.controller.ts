@@ -1,13 +1,16 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Public } from './common/decorators/public.decorator';
-import { AuthorizationGuard, JwtAuthGuard } from './common/guards';
+import { AuthorizationGuard, JwtAuthGuard, RolesGuard } from './common/guards';
 import { Permissions } from './common/decorators/permission.decorator';
 import { Resource } from './modules/roles/enums/resource.enum';
 import { Action } from './modules/roles/enums/action.enum';
+import { Roles } from './common/decorators';
+import { UserRole } from './common/enums/user-role.enum';
+
 
 @Controller()
-@UseGuards(JwtAuthGuard, AuthorizationGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
@@ -18,12 +21,7 @@ export class AppController {
   }
 
   @Get('profile')
-  @Permissions([
-      {
-        resource: Resource.settings,
-        actions: [Action.create],
-      },
-    ])
+  @Roles(UserRole.ADMIN)
   getProfile(@Req() req) {
     return {
       message: 'This is a protected route',

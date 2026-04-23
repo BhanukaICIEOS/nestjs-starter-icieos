@@ -31,6 +31,36 @@ export class AuthController {
   }
 
   @Public()
+  @Post('signup/candidate')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new candidate' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Candidate successfully registered',
+    type: AuthResponseDto,
+  })
+  @ApiResourceConflictException()
+  @ApiValidationException()
+  async signupCandidate(@Body() signupDto: SignupDto): Promise<AuthResponseDto> {
+    return this.authService.signupCandidate(signupDto);
+  }
+
+  @Public()
+  @Post('signup/employer')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new employer' })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Employer successfully registered',
+    type: AuthResponseDto,
+  })
+  @ApiResourceConflictException()
+  @ApiValidationException()
+  async signupEmployer(@Body() signupDto: SignupDto): Promise<AuthResponseDto> {
+    return this.authService.signupEmployer(signupDto);
+  }
+
+  @Public()
   @Post('signin')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Sign in with email and password' })

@@ -48,12 +48,91 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: undefined,
       accessToken,
       refreshToken,
     };
   }
 
-  async signin(signinDto: SigninDto) {
+  async signupCandidate(signupDto: SignupDto): Promise<AuthResponseDto> {
+    // Check if user already exists
+    const existingUser = await this.authRepository.findByEmail(signupDto.email);
+    if (existingUser) {
+      throw new EmailAlreadyTakenException(signupDto.email);
+    }
+
+    // Get candidate role
+    const candidateRole = await this.rolesService.getRoleByName('candidate');
+    if (!candidateRole) {
+      throw new NotFoundException('Candidate role not found. Please initialize roles first.');
+    }
+
+    // Hash password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(signupDto.password, saltRounds);
+
+    // Create user with candidate role
+    const user = await this.authRepository.createUser({
+      ...signupDto,
+      password: hashedPassword,
+      roleId: candidateRole._id,
+    });
+
+    // Generate tokens
+    const accessToken = this.generateToken(user.id);
+    const refreshToken = uuidv4();
+    await this.storeRefreshToken(refreshToken, user.id);
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: 'candidate',
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async signupEmployer(signupDto: SignupDto): Promise<AuthResponseDto> {
+    // Check if user already exists
+    const existingUser = await this.authRepository.findByEmail(signupDto.email);
+    if (existingUser) {
+      throw new EmailAlreadyTakenException(signupDto.email);
+    }
+
+    // Get employer role
+    const employerRole = await this.rolesService.getRoleByName('employer');
+    if (!employerRole) {
+      throw new NotFoundException('Employer role not found. Please initialize roles first.');
+    }
+
+    // Hash password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(signupDto.password, saltRounds);
+
+    // Create user with employer role
+    const user = await this.authRepository.createUser({
+      ...signupDto,
+      password: hashedPassword,
+      roleId: employerRole._id,
+    });
+
+    // Generate tokens
+    const accessToken = this.generateToken(user.id);
+    const refreshToken = uuidv4();
+    await this.storeRefreshToken(refreshToken, user.id);
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: 'employer',
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async signin(signinDto: SigninDto) : Promise<AuthResponseDto>{
     // Find user by email
     const user = await this.authRepository.findByEmail(signinDto.email);
     if (!user) {
@@ -66,6 +145,13 @@ export class AuthService {
       throw new InvalidCredentialsException('Invalid Password');
     }
 
+    // Get user role
+    let roleName: string | undefined;
+    if (user.roleId) {
+      const role = await this.rolesService.getRoleById(user.roleId.toString());
+      roleName = role?.name;
+    }
+
     // Generate token
     const accessToken = this.generateToken(user.id);
     const refreshToken = uuidv4();
@@ -75,6 +161,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: roleName,
       accessToken,
       refreshToken,
     };
@@ -115,6 +202,13 @@ export class AuthService {
       throw new NotFoundException(`User not found`);
     }
 
+    // Get user role
+    let roleName: string | undefined;
+    if (user.roleId) {
+      const role = await this.rolesService.getRoleById(user.roleId.toString());
+      roleName = role?.name;
+    }
+
     // Generate new tokens
     const newAccessToken = this.generateToken(user.id);
     const newRefreshToken = uuidv4();
@@ -127,6 +221,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: roleName,
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
@@ -217,6 +312,20 @@ export class AuthService {
     if (!role) throw new NotFoundException(`Role not found`);
 
     return role.permissions;
+  }
+
+  async getUserRole(userId: string): Promise<string | null> {
+    const user = await this.authRepository.findById(userId);
+
+    if (!user) throw new NotFoundException(`User id: ${userId} not found`);
+
+    if (!user.roleId) return null;
+
+    const role = await this.rolesService.getRoleById(user.roleId.toString());
+    
+    if (!role) return null;
+
+    return role.name;
   }
 
 }

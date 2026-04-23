@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 import { Action } from '../enums/action.enum';
 import { Resource } from '../enums/resource.enum';
 
@@ -12,7 +13,7 @@ class Permission {
 }
 
 @Schema()
-export class Role {
+export class Role extends Document {
   @Prop({ required: true })
   name!: string;
 

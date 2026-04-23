@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User } from '../models/user.schema';
 import { SignupDto } from '../dtos/signup.dto';
 import { RefreshToken } from '../models/refresh-token-schemas';
@@ -14,7 +14,7 @@ export class AuthRepository {
     @InjectModel(ResetToken.name) private resetTokenModel: Model<ResetToken>
   ) {}
 
-  async createUser(signupDto: SignupDto): Promise<User> {
+  async createUser(signupDto: SignupDto & { roleId?: Types.ObjectId }): Promise<User> {
     const user = new this.userModel(signupDto);
     return user.save();
   }

@@ -10,6 +10,9 @@ export class AuthResponseDto {
   @ApiProperty()
   name!: string;
 
+  @ApiProperty({ required: false })
+  role?: string;
+
   @ApiProperty()
   accessToken!: string;
 
