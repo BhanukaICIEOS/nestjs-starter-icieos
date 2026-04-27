@@ -10,6 +10,9 @@ import configuration from './config/configuration';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtAuthGuard } from './common/guards';
 import { DatabaseSeedService } from './database/database-seed.service';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { createKeyv } from '@keyv/redis';
 
 @Module({
   imports: [
@@ -27,6 +30,13 @@ import { DatabaseSeedService } from './database/database-seed.service';
       global: true,
       inject: [ConfigService]
     }),
+    CacheModule.registerAsync({
+      useFactory: async () => ({
+        stores: [createKeyv('redis://localhost:6379')],
+        ttl: 60 * 1000,
+      }),
+      isGlobal: true,
+    }),
     DatabaseModule,
     AuthModule,
     RolesModule,
@@ -38,6 +48,10 @@ import { DatabaseSeedService } from './database/database-seed.service';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
     },
   ],
 })

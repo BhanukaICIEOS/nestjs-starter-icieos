@@ -11,6 +11,7 @@ export interface AppConfig {
   mail: MailConfig;
   isDevEnv: boolean;
   corsMaxAge: number;
+  redis: RedisConfig;
 }
 
 export interface MailConfig {
@@ -18,6 +19,11 @@ export interface MailConfig {
   port: number;
   user: string;
   pass: string;
+}
+
+export interface RedisConfig {
+  host: string;
+  port: number;
 }
 
 export interface DatabaseConfig {
@@ -52,6 +58,8 @@ export default (): AppConfig => {
     MAIL_PORT: num({ default: 587 }),
     MAIL_USER: str(),
     MAIL_PASS: str(),
+    REDIS_HOST: str({ default: 'localhost' }),
+    REDIS_PORT: num({ default: 6379 }),
   });
 
   const config: AppConfig = {
@@ -72,6 +80,10 @@ export default (): AppConfig => {
       port: env.MAIL_PORT,
       user: env.MAIL_USER,
       pass: env.MAIL_PASS,
+    },
+    redis: {
+      host: env.REDIS_HOST,
+      port: env.REDIS_PORT,
     },
   };
 
